@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1F3864">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>收病人 · 开医嘱</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:19px}
+body{margin:0;background:#F1F4F9;color:#0F172A;line-height:1.55;
+ font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+ padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+
+/* ---------- 顶栏 ---------- */
+header{position:sticky;top:0;z-index:30;
+ background:linear-gradient(135deg,#1B325B 0%,#24467C 100%);color:#fff;
+ padding:11px 14px 12px;box-shadow:0 4px 14px rgba(16,24,40,.18)}
+.htop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.warn{background:#FDECEC;color:#B42318;font-size:.76rem;line-height:1.6;
+ padding:9px 13px;border-bottom:1px solid #F5C2C0}
+h1{font-size:1rem;margin:0;font-weight:700;letter-spacing:.6px}
+.hstat{font-size:.7rem;color:#B9C9E6;margin-top:3px;letter-spacing:.2px}
+.gear{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:12px;
+ width:42px;height:42px;font-size:1.1rem;line-height:1;display:flex;align-items:center;
+ justify-content:center;flex:0 0 auto}
+
+main{padding:11px 11px 4px;max-width:760px;margin:0 auto}
+main section{display:none}
+main section.on{display:block}
+
+/* ---------- 病人卡 ---------- */
+.pat{background:#fff;border-radius:16px;padding:11px 12px 12px;margin-bottom:9px;
+ border:1px solid #E7EBF2;
+ box-shadow:0 1px 2px rgba(16,24,40,.04),0 2px 8px rgba(16,24,40,.04);
+ transition:border-color .15s,box-shadow .15s}
+.pat.open{border-color:#C6D4EC;box-shadow:0 2px 4px rgba(16,24,40,.05),0 6px 18px rgba(31,56,100,.10)}
+.pat.tmp{border-left:3px solid #9BB3DA}
+.prow{display:flex;align-items:center;gap:9px}
+.ibed{width:3.5em;flex:0 0 auto;text-align:center;
+ background:linear-gradient(160deg,#25467C,#1B325B);color:#fff;border:0;
+ border-radius:12px;padding:9px 2px;font-size:.95rem;font-weight:700;
+ font-family:inherit;letter-spacing:.5px;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.ibed::placeholder{color:#8FA6CC;font-weight:600;font-size:.78rem}
+.idx{flex:1;min-width:0;border:0;background:transparent;padding:6px 1px;font-size:.95rem;
+ font-weight:700;color:#0F172A;font-family:inherit}
+.idx::placeholder{color:#AEB6C4;font-weight:500}
+.meta{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.cnt{font-size:.72rem;font-weight:800;color:#64748B;letter-spacing:.2px;
+ font-variant-numeric:tabular-nums}
+.cnt.bad{color:#D92D20}
+.badge{font-size:.62rem;font-weight:800;color:#B42318;background:#FEE4E2;
+ padding:2px 5px;border-radius:6px;line-height:1.2}
+.chev{width:30px;height:30px;border:0;border-radius:9px;background:#F1F4F9;color:#475467;
+ font-size:.72rem;font-weight:700;flex:0 0 auto;font-family:inherit}
+.chev.open{background:#1B325B;color:#fff}
+.rm{width:26px;height:26px;border:0;border-radius:8px;background:#FEF3F2;color:#D92D20;
+ font-size:.66rem;font-weight:700;flex:0 0 auto;font-family:inherit}
+
+.inote{width:100%;border:0;border-bottom:1.5px dashed #CBD5E1;background:transparent;
+ padding:8px 1px 6px;font-size:.85rem;color:#334155;font-family:inherit;margin-top:2px}
+.inote::placeholder{color:#B7BFCB}
+
+.seg{display:flex;gap:3px;margin-top:9px}
+.seg i{flex:1;height:5px;border-radius:3px;background:#E8EDF4;transition:background .15s}
+.seg i.ok{background:#2E9E5B}
+.seg i.no{background:#E5484D}
+.seg i.na{background:#C9D2E0}
+
+.pbody{display:none;margin-top:11px;padding-top:11px;border-top:1px solid #F0F3F8}
+.pbody.on{display:block}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.chip{display:flex;align-items:center;gap:7px;padding:8px;border-radius:11px;
+ border:1px solid #E7EBF2;background:#FCFDFE;font-size:.81rem;font-weight:600;color:#3F4A5A;
+ text-align:left;min-height:44px;font-family:inherit;overflow:hidden}
+.chip i{font-style:normal;width:20px;height:20px;border-radius:50%;border:1.5px solid #D3DAE4;
+ display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#fff;
+ flex:0 0 auto;font-weight:700;background:#fff}
+.chip em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.ok{background:#EAF7EF;border-color:#9FD8B4;color:#1B6B3A}
+.chip.ok i{background:#2E9E5B;border-color:#2E9E5B}
+.chip.no{background:#FEF1F0;border-color:#F5B5B3;color:#B42318}
+.chip.no i{background:#E5484D;border-color:#E5484D}
+.chip.na{background:#F4F6FA;border-color:#E2E7EF;color:#8A94A6}
+.chip.na i{background:#A9B3C2;border-color:#A9B3C2}
+
+/* ---------- 新增病人 ---------- */
+.tools{display:flex;gap:8px;margin:0 0 9px}
+.tool{flex:1;padding:10px 8px;border-radius:12px;border:1px solid #E2E7EF;background:#fff;
+ color:#475467;font-size:.78rem;font-weight:700;font-family:inherit;
+ box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.addpat{width:100%;padding:15px;border-radius:16px;border:1.5px dashed #B9C7DE;
+ background:rgba(255,255,255,.7);color:#1B325B;font-size:.9rem;font-weight:700;
+ font-family:inherit;margin:2px 0 8px}
+.addhint{text-align:center;font-size:.7rem;color:#98A2B3;margin:0 0 14px}
+
+/* ---------- 总览矩阵 ---------- */
+.mxwrap{overflow:auto;-webkit-overflow-scrolling:touch;border-radius:16px;background:#fff;
+ border:1px solid #E7EBF2;box-shadow:0 1px 2px rgba(16,24,40,.04);
+ max-height:calc(100vh - 190px)}
+table.mx{border-collapse:separate;border-spacing:0;font-size:.76rem}
+.mx th,.mx td{border-bottom:1px solid #EFF2F7;border-right:1px solid #F5F7FA}
+.mx thead th{position:sticky;top:0;background:#1B325B;color:#fff;z-index:3;
+ font-weight:600;padding:4px 2px}
+.mx thead th.stk{left:0;z-index:5;min-width:58px;width:58px;font-size:.76rem}
+.mx tbody th.stk{position:sticky;left:0;background:#F7F9FC;z-index:2;
+ color:#1B325B;font-weight:800;min-width:58px;width:58px;text-align:center;font-size:.86rem}
+.mx thead th.item{height:104px;width:44px;min-width:44px;vertical-align:bottom}
+.mx thead th.item span{writing-mode:vertical-rl;text-orientation:upright;
+ font-size:.7rem;letter-spacing:1px;display:inline-block;max-height:94px;overflow:hidden}
+.mx thead th.sum,.mx tbody td.sum{width:52px;min-width:52px;text-align:center;font-size:.74rem}
+.mx tbody td{width:44px;min-width:44px;height:46px;text-align:center;color:#C7CDD6;
+ font-weight:700;background:#fff}
+.mx tbody td.ok{background:#EAF7EF;color:#1B6B3A}
+.mx tbody td.no{background:#FEF1F0;color:#B42318}
+.mx tbody td.na{background:#F4F6FA;color:#98A2B3}
+.mx tbody td.sum{background:#FBFCFE;color:#1B325B;font-weight:800}
+.mx tbody tr:last-child td,.mx tbody tr:last-child th{border-bottom:0}
+.mxleg{font-size:.71rem;color:#8A94A6;padding:9px 4px 0;line-height:1.7}
+
+/* ---------- 模板 ---------- */
+.subtabs{display:flex;gap:8px;margin-bottom:10px}
+.subtabs button{flex:1;padding:11px 6px;border-radius:12px;border:1px solid #E2E7EF;
+ background:#fff;font-size:.85rem;font-weight:700;color:#475467;font-family:inherit}
+.subtabs button.on{background:#1B325B;border-color:#1B325B;color:#fff}
+.blk{background:#fff;border-radius:16px;padding:11px 13px 12px;margin-bottom:10px;
+ border:1px solid #E7EBF2;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.bt{width:100%;border:0;border-bottom:1px solid #EFF2F7;padding:8px 0;font-size:.9rem;
+ font-weight:700;color:#1B325B;font-family:inherit;background:transparent}
+.bt::placeholder{color:#B0B8C6;font-weight:600}
+.bb{width:100%;border:0;padding:9px 0 2px;font-size:.87rem;color:#243044;font-family:inherit;
+ line-height:1.7;resize:none;background:transparent;min-height:52px}
+.bb::placeholder{color:#AEB6C2}
+.bdel{border:0;background:none;color:#98A2B3;font-size:.75rem;padding:6px 0 0;font-family:inherit}
+.addb{width:100%;padding:15px;border-radius:16px;border:1.5px dashed #B9C7DE;background:#fff;
+ color:#1B325B;font-size:.9rem;font-weight:700;font-family:inherit;margin-bottom:14px}
+.empty{text-align:center;color:#98A2B3;font-size:.82rem;padding:28px 12px;line-height:1.9}
+
+/* ---------- 底部导航 ---------- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;
+ border-top:1px solid #E7EBF2;display:flex;padding:5px 4px env(safe-area-inset-bottom);
+ box-shadow:0 -3px 16px rgba(16,24,40,.07)}
+.tabbar a{flex:1;text-align:center;text-decoration:none;color:#7A8698;font-size:.82rem;
+ font-weight:700;padding:9px 0;border-radius:11px}
+.tabbar a.on{color:#1B325B;background:#EDF2FA}
+
+/* ---------- 设置 ---------- */
+#mask{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;pointer-events:none;
+ transition:.2s;z-index:50}
+#mask.on{opacity:1;pointer-events:auto}
+#set{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#F7F9FC;
+ border-radius:20px 20px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+ transform:translateY(102%);transition:.25s;max-height:90vh;overflow:auto}
+#set.on{transform:none}
+#set h3{margin:0 0 12px;font-size:1rem;color:#1B325B}
+#set h4{margin:18px 0 8px;font-size:.81rem;color:#475467}
+.szrow{display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.szrow span{font-size:.81rem;color:#475467;width:2.6em}
+.szrow button{flex:1;padding:10px;border-radius:11px;border:1px solid #E2E7EF;background:#fff;
+ font-size:.81rem;font-weight:700;color:#475467;font-family:inherit}
+.szrow button.on{background:#1B325B;border-color:#1B325B;color:#fff}
+.irow{display:flex;align-items:center;gap:6px;background:#fff;border-radius:12px;
+ padding:7px 8px;margin-bottom:7px;border:1px solid #EFF2F7}
+.irow .no{width:1.6em;text-align:center;font-size:.73rem;color:#98A2B3;font-weight:700}
+.irow input{flex:1;min-width:0;border:0;font-size:.87rem;font-family:inherit;color:#0F172A;
+ padding:6px 2px;background:transparent}
+.irow button{border:0;background:#EDF2FA;color:#1B325B;border-radius:9px;width:34px;height:34px;
+ font-size:.84rem;font-family:inherit;font-weight:700;flex:0 0 auto}
+.irow button.del{background:#FEF3F2;color:#D92D20}
+#addItem{width:100%;padding:13px;border-radius:12px;border:1.5px dashed #B9C7DE;background:#fff;
+ color:#1B325B;font-size:.85rem;font-weight:700;font-family:inherit;margin:4px 0 10px}
+.ghost{width:100%;padding:12px;border-radius:12px;border:0;background:#EDF2FA;color:#1B325B;
+ font-size:.81rem;font-weight:700;font-family:inherit}
+#toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));
+ transform:translate(-50%,16px);background:#0F172A;color:#fff;font-size:.79rem;
+ padding:9px 16px;border-radius:99px;opacity:0;transition:.2s;z-index:70;pointer-events:none}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <div>
+      <h1>收病人 · 开医嘱</h1>
+      <div class="hstat" id="stat">—</div>
+    </div>
+    <button class="gear" id="btnSet" aria-label="设置">⚙</button>
+  </div>
+</header>
+<div class="warn" id="warn" hidden></div>
+
+<main>
+  <section id="t-board" class="on">
+    <div class="tools">
+      <button class="tool" id="sortBed">⇅ 按床号排序</button>
+      <button class="tool" id="foldAll">⊟ 全部收起</button>
+    </div>
+    <div id="board"></div>
+    <button class="addpat" id="addPat">＋ 新增一个病人</button>
+    <div class="addhint">12 张固定床位不能删；下面加的排最后、左边带蓝线，可删</div>
+  </section>
+
+  <section id="t-mx">
+    <div class="mxwrap"><table class="mx" id="mx"></table></div>
+    <div class="mxleg">横着滑看全部条目。点格子：一下 ✔ 绿＝已完成，两下 ✕ 红＝未完成，三下 — 灰＝这个病人不需要。第一列固定不动。</div>
+  </section>
+
+  <section id="t-tmpl">
+    <div class="subtabs">
+      <button data-sub="tmpl" class="on">医嘱模板</button>
+      <button data-sub="kp">知识速记</button>
+    </div>
+    <div id="blocks"></div>
+    <button class="addb" id="addBlk">＋ 新增一条</button>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <a href="#board" data-tab="board" class="on">看板</a>
+  <a href="#mx" data-tab="mx">总览</a>
+  <a href="#tmpl" data-tab="tmpl">模板</a>
+</nav>
+
+<div id="mask"></div>
+<div id="set">
+  <h3>设置</h3>
+  <div class="szrow"><span>字号</span>
+    <button class="sz" data-size="17">小</button>
+    <button class="sz" data-size="19">中</button>
+    <button class="sz" data-size="21">大</button>
+  </div>
+  <h4>打勾清单 · 想加第 17、18 条就在这加</h4>
+  <div id="itemList"></div>
+  <button id="addItem">＋ 添加一条</button>
+  <button class="ghost" id="resetItems">恢复默认 16 条</button>
+  <h4>备份 · 换手机、清缓存、怕丢就打一份</h4>
+  <button class="ghost" id="btnExport">导出备份文件</button>
+  <button class="ghost" id="btnImport">导入备份文件</button>
+  <input type="file" id="impFile" accept=".json,application/json" hidden>
+</div>
+<div id="toast"></div>
+
+<script>
+const KEY='cwb_v4';
+const BASE=12;
+const DEF=['首程','入院录','同意书','检查四项','双抗负荷','双抗长嘱','主治首查','主任首查',
+ '术前讨论','术前小结','发手术','术后首程','术后ECG','次日空腹血','出院小结','病案首页'];
+const SEQ=['','ok','no','na'];
+const GLYPH={ok:'✔',no:'✕',na:'—'};
+
+function defItems(){ return DEF.map(function(n,i){ return {id:'s'+(i+1), n:n}; }); }
+function blank(tmp){ return {bed:'',dx:'',note:'',ck:{},tmp:!!tmp}; }
+function defState(){ return {size:19, items:defItems(),
+  pts:Array.from({length:BASE},function(){ return blank(false); }), tmpl:[], kp:[], sub:'tmpl', open:{}}; }
+
+let mem=null;
+/* 有些内置浏览器（文件预览、无痕）不让存数据，先探一下，存不了就提前提醒 */
+let storageOK=true;
+try{ localStorage.setItem('__probe__','1'); localStorage.removeItem('__probe__'); }
+catch(e){ storageOK=false; }
+
+function load(){
+  let s=null;
+  try{ s=JSON.parse(localStorage.getItem(KEY)); }catch(e){ s=mem; }
+  if(!s||!Array.isArray(s.items)||!s.items.length||!Array.isArray(s.pts)) s=defState();
+  while(s.pts.length<BASE) s.pts.push(blank(false));
+  s.pts.forEach(function(p,i){ if(typeof p.tmp!=='boolean') p.tmp = i>=BASE; });
+  if(!s.tmpl) s.tmpl=[]; if(!s.kp) s.kp=[];
+  if(!s.open||typeof s.open!=='object') s.open={};
+  return s;
+}
+let state=load();
+function save(){ mem=state; if(!storageOK) return;
+  try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+let saveTimer=null;
+function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(save,500); }
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function mark(p,id){ const v=p.ck[id]; return (v==='ok'||v==='no'||v==='na')?v:''; }
+function counts(p){
+  let ok=0,no=0,na=0;
+  state.items.forEach(function(it){ const v=mark(p,it.id);
+    if(v==='ok') ok++; else if(v==='no') no++; else if(v==='na') na++; });
+  return {ok:ok,no:no,na:na};
+}
+function toggle(i,id){
+  const p=state.pts[i]; if(!p) return;
+  const cur=mark(p,id);
+  const next=SEQ[(SEQ.indexOf(cur)+1)%SEQ.length];
+  if(next==='') delete p.ck[id]; else p.ck[id]=next;
+  saveSoon();
+  syncPatient(i);
+}
+
+/* 唯一数据源：只改 state，然后 syncPatient 同时刷新看板与总览 */
+function syncPatient(i){
+  const p=state.pts[i]; if(!p) return;
+  const total=state.items.length, n=counts(p), pct=total?Math.round(n.ok/total*100):0;
+  document.querySelectorAll('[data-cnt="'+i+'"]').forEach(function(el){
+    el.textContent=n.ok+'/'+total; el.classList.toggle('bad', n.no>0); });
+  document.querySelectorAll('[data-badge="'+i+'"]').forEach(function(el){
+    if(n.no>0){ el.textContent='✕'+n.no; el.style.display=''; } else { el.style.display='none'; } });
+  document.querySelectorAll('[data-bar="'+i+'"]').forEach(function(el){
+    el.style.width=pct+'%'; });
+  state.items.forEach(function(it){
+    const v=mark(p,it.id);
+    document.querySelectorAll('[data-seg="'+i+'_'+it.id+'"]').forEach(function(el){
+      el.className=v; });
+    document.querySelectorAll('[data-chip="'+i+'_'+it.id+'"]').forEach(function(el){
+      el.className='chip '+v;
+      const ic=el.querySelector('i'); if(ic) ic.textContent=GLYPH[v]||'';
+    });
+    document.querySelectorAll('[data-cell="'+i+'_'+it.id+'"]').forEach(function(el){
+      el.className=v; el.textContent=GLYPH[v]||'·';
+    });
+  });
+  updateStat();
+}
+function updateStat(){
+  let filled=0, ok=0, no=0, extra=0;
+  state.pts.forEach(function(p){ if(p.bed||p.dx) filled++;
+    if(p.tmp) extra++;
+    const n=counts(p); ok+=n.ok; no+=n.no; });
+  document.getElementById('stat').textContent=
+    '在院 '+filled+' 人 · 已完成 '+ok+' · 未完成 '+no+(extra?' · 临时床 '+extra:'');
+}
+
+/* 按床号排：纯数字按大小，带字母的排在数字后面，没填床号的排最后 */
+function bedKey(p){
+  const t=String(p.bed||'').trim();
+  if(!t) return {e:1, n:9e9, s:''};
+  const m=/^(\d+)/.exec(t);
+  return {e:0, n:m?+m[1]:9e8, s:t};
+}
+function sortByBed(){
+  const arr=state.pts.map(function(p,i){ return {p:p, i:i}; });
+  arr.sort(function(a,b){
+    const A=bedKey(a.p), B=bedKey(b.p);
+    if(A.e!==B.e) return A.e-B.e;
+    if(A.n!==B.n) return A.n-B.n;
+    if(A.s!==B.s) return A.s.localeCompare(B.s,'zh-Hans-CN');
+    return a.i-b.i;
+  });
+  state.pts=arr.map(function(o){ return o.p; });
+  state.open={};
+  save(); renderBoard(); renderMx();
+  toast('已按床号排序');
+}
+
+function cardHTML(i){
+  const p=state.pts[i], n=counts(p), total=state.items.length;
+  const open=!!state.open[i], tmp=!!p.tmp;
+  const segs=state.items.map(function(it){
+    return '<i data-seg="'+i+'_'+it.id+'" class="'+mark(p,it.id)+'"></i>'; }).join('');
+  return '<article class="pat '+(open?'open ':'')+(tmp?'tmp':'')+'">'
+    +'<div class="prow">'
+    +'<input class="ibed" data-i="'+i+'" data-f="bed" value="'+esc(p.bed)+'" placeholder="床号" inputmode="numeric">'
+    +'<input class="idx" data-i="'+i+'" data-f="dx" value="'+esc(p.dx)+'" placeholder="诊断">'
+    +'<span class="meta">'
+    +'<span class="badge" data-badge="'+i+'" style="'+(n.no>0?'':'display:none')+'">✕'+n.no+'</span>'
+    +'<span class="cnt" data-cnt="'+i+'">'+n.ok+'/'+total+'</span>'
+    +'</span>'
+    +(tmp?'<button class="rm" data-rm="'+i+'">✕</button>':'')
+    +'<button class="chev '+(open?'open':'')+'" data-open="'+i+'">'+(open?'▴':'▾')+'</button>'
+    +'</div>'
+    +'<input class="inote" data-i="'+i+'" data-f="note" value="'+esc(p.note)+'" placeholder="备注">'
+    +'<div class="seg">'+segs+'</div>'
+    +'<div class="pbody '+(open?'on':'')+'"><div class="chips">'
+    + state.items.map(function(it){ const v=mark(p,it.id);
+        return '<button class="chip '+v+'" data-chip="'+i+'_'+it.id+'" data-i="'+i+'" data-id="'+it.id+'">'
+          +'<i>'+(GLYPH[v]||'')+'</i><em>'+esc(it.n)+'</em></button>'; }).join('')
+    +'</div></div>'
+    +'</article>';
+}
+function renderBoard(){
+  document.getElementById('board').innerHTML=
+    state.pts.map(function(p,i){ return cardHTML(i); }).join('');
+  updateStat();
+}
+
+function renderMx(){
+  const t=document.getElementById('mx');
+  let h='<thead><tr><th class="stk">床</th>';
+  state.items.forEach(function(it){
+    h+='<th class="item" title="'+esc(it.n)+'"><span>'+esc(it.n)+'</span></th>'; });
+  h+='<th class="sum">完成</th></tr></thead><tbody>';
+  state.pts.forEach(function(p,i){
+    const n=counts(p);
+    h+='<tr><th class="stk">'+esc(p.bed||'—')+'</th>';
+    state.items.forEach(function(it){
+      const v=mark(p,it.id);
+      h+='<td class="'+v+'" data-cell="'+i+'_'+it.id+'" data-i="'+i+'" data-id="'+it.id+'">'
+        +(GLYPH[v]||'·')+'</td>';
+    });
+    h+='<td class="sum" data-cnt="'+i+'">'+n.ok+'/'+state.items.length+'</td></tr>';
+  });
+  t.innerHTML=h+'</tbody>';
+}
+
+function renderBlocks(){
+  const box=document.getElementById('blocks');
+  const arr=state[state.sub]||[];
+  document.querySelectorAll('.subtabs button').forEach(function(b){
+    b.classList.toggle('on',b.dataset.sub===state.sub); });
+  if(!arr.length){
+    box.innerHTML='<div class="empty">还没有内容<br>点下面「＋ 新增一条」，标题 + 正文，想写什么写什么</div>';
+    return;
+  }
+  box.innerHTML=arr.map(function(b,i){
+    const rows=Math.max(2,(b.b||'').split('\n').length+1);
+    return '<div class="blk">'
+      +'<input class="bt" data-k="'+state.sub+'" data-i="'+i+'" value="'+esc(b.t)+'" placeholder="小标题（可留空）">'
+      +'<textarea class="bb" data-k="'+state.sub+'" data-i="'+i+'" rows="'+rows+'" placeholder="正文…">'+esc(b.b)+'</textarea>'
+      +'<button class="bdel" data-k="'+state.sub+'" data-i="'+i+'">删除这条</button>'
+      +'</div>';
+  }).join('');
+}
+function autoGrow(ta){ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; }
+
+function renderItems(){
+  const box=document.getElementById('itemList');
+  box.innerHTML=state.items.map(function(it,i){
+    return '<div class="irow"><span class="no">'+(i+1)+'</span>'
+      +'<input class="iname" data-i="'+i+'" value="'+esc(it.n)+'">'
+      +'<button class="up" data-i="'+i+'">↑</button>'
+      +'<button class="dn" data-i="'+i+'">↓</button>'
+      +'<button class="del" data-i="'+i+'">✕</button></div>';
+  }).join('');
+}
+function openSet(){ document.getElementById('set').classList.add('on');
+  document.getElementById('mask').classList.add('on'); renderItems(); }
+function closeSet(){ document.getElementById('set').classList.remove('on');
+  document.getElementById('mask').classList.remove('on'); }
+
+document.addEventListener('click',function(ev){
+  const chip=ev.target.closest('.chip');
+  if(chip){ toggle(+chip.dataset.i, chip.dataset.id); return; }
+  const cell=ev.target.closest('#mx td');
+  if(cell && cell.dataset.id){ toggle(+cell.dataset.i, cell.dataset.id); return; }
+  const chev=ev.target.closest('[data-open]');
+  if(chev){ const i=+chev.dataset.open; state.open[i]=!state.open[i]; save();
+    const card=chev.closest('.pat');
+    card.querySelector('.pbody').classList.toggle('on', state.open[i]);
+    card.classList.toggle('open', state.open[i]);
+    chev.classList.toggle('open', state.open[i]);
+    chev.textContent=state.open[i]?'▴':'▾'; return; }
+  const rmBtn=ev.target.closest('[data-rm]');
+  if(rmBtn){ const i=+rmBtn.dataset.rm;
+    if(!state.pts[i]||!state.pts[i].tmp){ toast('这 12 张是固定床位'); return; }
+    if(!confirm('删掉这张卡？（这个病人的打勾一并删除）')) return;
+    state.pts.splice(i,1); state.open={};
+    save(); renderBoard(); renderMx(); toast('已删除'); return; }
+  const del=ev.target.closest('.bdel');
+  if(del){ state[del.dataset.k].splice(+del.dataset.i,1); save(); renderBlocks(); return; }
+  const up=ev.target.closest('.up'), dn=ev.target.closest('.dn'), rm=ev.target.closest('.irow .del');
+  if(up||dn){
+    const i=+(up||dn).dataset.i, j=up?i-1:i+1;
+    if(j<0||j>=state.items.length) return;
+    const a=state.items, t=a[i]; a[i]=a[j]; a[j]=t;
+    save(); renderItems(); renderBoard(); renderMx(); return;
+  }
+  if(rm){
+    if(state.items.length<=1){ toast('至少留一条'); return; }
+    const it=state.items[+rm.dataset.i];
+    state.items.splice(+rm.dataset.i,1);
+    state.pts.forEach(function(p){ delete p.ck[it.id]; });
+    save(); renderItems(); renderBoard(); renderMx(); return;
+  }
+});
+document.addEventListener('input',function(ev){
+  const t=ev.target;
+  if(t.classList.contains('ibed')||t.classList.contains('idx')||t.classList.contains('inote')){
+    state.pts[+t.dataset.i][t.dataset.f]=t.value;
+    saveSoon(); updateStat();
+    if(t.classList.contains('ibed')){
+      const th=document.querySelectorAll('#mx tbody th.stk')[+t.dataset.i];
+      if(th) th.textContent=t.value||'—';
+    }
+    return;
+  }
+  if(t.classList.contains('bt')||t.classList.contains('bb')){
+    state[t.dataset.k][+t.dataset.i][t.classList.contains('bt')?'t':'b']=t.value;
+    saveSoon();
+    if(t.classList.contains('bb')) autoGrow(t);
+    return;
+  }
+  if(t.classList.contains('iname')){ state.items[+t.dataset.i].n=t.value; saveSoon(); return; }
+});
+document.addEventListener('change',function(ev){
+  const t=ev.target;
+  if(t.classList.contains('iname')){ save(); renderBoard(); renderMx(); }
+});
+document.getElementById('btnSet').onclick=openSet;
+document.getElementById('mask').onclick=closeSet;
+document.getElementById('sortBed').onclick=sortByBed;
+document.getElementById('foldAll').onclick=function(){
+  state.open={}; save(); renderBoard(); toast('已全部收起'); };
+document.getElementById('addPat').onclick=function(){
+  state.pts.push(blank(true));
+  const i=state.pts.length-1;
+  state.open={}; state.open[i]=true;
+  save(); renderBoard(); renderMx();
+  const el=document.querySelectorAll('.ibed')[i];
+  if(el) el.focus();
+  toast('已加一张（临时床）');
+};
+document.getElementById('addItem').onclick=function(){
+  state.items.push({id:'x'+Date.now(), n:'新条目'});
+  save(); renderItems(); renderBoard(); renderMx();
+  const ins=document.querySelectorAll('.iname');
+  const last=ins[ins.length-1]; if(last){ last.focus(); last.select(); }
+};
+document.getElementById('resetItems').onclick=function(){
+  if(!confirm('恢复成默认 16 条？多加的条目会丢（同 id 的勾会保留）。')) return;
+  state.items=defItems();
+  state.pts.forEach(function(p){
+    const keep={}; state.items.forEach(function(it){ if(p.ck[it.id]) keep[it.id]=p.ck[it.id]; });
+    p.ck=keep;
+  });
+  save(); renderItems(); renderBoard(); renderMx(); toast('已恢复默认');
+};
+document.getElementById('addBlk').onclick=function(){
+  state[state.sub].push({t:'',b:''});
+  save(); renderBlocks();
+  const tas=document.querySelectorAll('.bb'); const last=tas[tas.length-1];
+  if(last) last.focus();
+};
+
+/* ---------- 备份：导出 / 导入 ---------- */
+function renderAll(){ renderBoard(); renderMx(); renderBlocks(); }
+function exportData(){
+  let txt='';
+  try{ txt=JSON.stringify(state); }catch(e){ toast('导出失败'); return; }
+  const name='收病人_备份_'+new Date().toISOString().slice(0,10)+'.json';
+  try{
+    const blob=new Blob([txt],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ try{ URL.revokeObjectURL(a.href); a.remove(); }catch(e){} },4000);
+    toast('已导出，去「文件」里找');
+  }catch(e){ toast('这个浏览器不支持下载'); }
+}
+function importData(txt){
+  let d=null;
+  try{ d=JSON.parse(txt); }catch(e){ toast('文件读不出来'); return; }
+  if(!d||!Array.isArray(d.items)||!d.items.length||!Array.isArray(d.pts)){ toast('不是备份文件'); return; }
+  while(d.pts.length<BASE) d.pts.push(blank(false));
+  d.pts.forEach(function(p,i){ if(typeof p.tmp!=='boolean') p.tmp=i>=BASE; if(!p.ck) p.ck={}; });
+  d.tmpl=d.tmpl||[]; d.kp=d.kp||[]; d.open={}; d.sub=d.sub||'tmpl'; d.size=d.size||19;
+  state=d; markStorage(); save();
+  document.documentElement.style.fontSize=(state.size||19)+'px';
+  document.querySelectorAll('.sz').forEach(function(x){
+    x.classList.toggle('on',+x.dataset.size===(state.size||19)); });
+  renderAll(); closeSet(); toast('已导入 '+(state.pts.length)+' 张床');
+}
+document.getElementById('btnExport').onclick=exportData;
+document.getElementById('btnImport').onclick=function(){
+  document.getElementById('impFile').click();
+};
+document.getElementById('impFile').onchange=function(ev){
+  const f=ev.target.files&&ev.target.files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=function(){ importData(String(r.result)); };
+  r.onerror=function(){ toast('读文件失败'); };
+  r.readAsText(f);
+  ev.target.value='';
+};
+document.querySelectorAll('.subtabs button').forEach(function(b){
+  b.onclick=function(){ state.sub=this.dataset.sub; save(); renderBlocks(); };
+});
+document.querySelectorAll('.sz').forEach(function(b){
+  b.onclick=function(){
+    state.size=+this.dataset.size; save();
+    document.documentElement.style.fontSize=state.size+'px';
+    document.querySelectorAll('.sz').forEach(function(x){
+      x.classList.toggle('on',+x.dataset.size===state.size); });
+  };
+});
+document.querySelectorAll('.tabbar a').forEach(function(a){
+  a.onclick=function(ev){
+    ev.preventDefault();
+    const n=this.dataset.tab;
+    document.querySelectorAll('main section').forEach(function(s){
+      s.classList.toggle('on',s.id==='t-'+n); });
+    document.querySelectorAll('.tabbar a').forEach(function(x){
+      x.classList.toggle('on',x.dataset.tab===n); });
+    window.scrollTo(0,0);
+    try{ location.hash=n; }catch(e){}
+  };
+});
+function markStorage(){
+  const el=document.getElementById('warn');
+  if(!el) return;
+  if(storageOK){ el.hidden=true; el.textContent=''; return; }
+  el.hidden=false;
+  el.textContent='这个浏览器不保存数据（文件预览或无痕模式），关掉就没了。'
+    +'请用 Safari 正常打开这个网页；实在不行，每次用完点 ⚙ →「导出备份文件」存一份。';
+}
+let toastTimer=null;
+function toast(t){
+  const el=document.getElementById('toast');
+  el.textContent=t; el.classList.add('on');
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){ el.classList.remove('on'); },1500);
+}
+document.documentElement.style.fontSize=(state.size||19)+'px';
+document.querySelectorAll('.sz').forEach(function(x){
+  x.classList.toggle('on',+x.dataset.size===(state.size||19)); });
+markStorage();
+renderBoard(); renderMx(); renderBlocks();
+const h0=(location.hash||'').replace('#','');
+if(['board','mx','tmpl'].indexOf(h0)>=0){
+  document.querySelectorAll('main section').forEach(function(s){
+    s.classList.toggle('on',s.id==='t-'+h0); });
+  document.querySelectorAll('.tabbar a').forEach(function(x){
+    x.classList.toggle('on',x.dataset.tab===h0); });
+}
+</script>
+</body>
+</html>
