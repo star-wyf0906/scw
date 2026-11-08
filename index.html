@@ -39,12 +39,14 @@ main section.on{display:block}
 .pat.open{border-color:#C6D4EC;box-shadow:0 2px 4px rgba(16,24,40,.05),0 6px 18px rgba(31,56,100,.10)}
 .pat.tmp{border-left:3px solid #9BB3DA}
 .prow{display:flex;align-items:center;gap:9px}
-.ibed{width:3.5em;flex:0 0 auto;text-align:center;
+.ibed{flex:0 0 auto;min-width:3.5em;text-align:center;
  background:linear-gradient(160deg,#25467C,#1B325B);color:#fff;border:0;
- border-radius:12px;padding:9px 2px;font-size:.95rem;font-weight:700;
- font-family:inherit;letter-spacing:.5px;
+ border-radius:12px;padding:9px 9px;font-size:.95rem;font-weight:700;
+ font-family:inherit;letter-spacing:.5px;line-height:1.15;
  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
-.ibed::placeholder{color:#8FA6CC;font-weight:600;font-size:.78rem}
+.ibed.none{background:#EAF0FB;color:#4A6FA5;font-size:.76rem;font-weight:800;
+ padding:9px 8px;box-shadow:inset 0 0 0 1px #C3D2EA}
+.ibed.tmpbed{background:linear-gradient(160deg,#2F7C9B,#225C75)}
 .idx{flex:1;min-width:0;border:0;background:transparent;padding:6px 1px;font-size:.95rem;
  font-weight:700;color:#0F172A;font-family:inherit}
 .idx::placeholder{color:#AEB6C4;font-weight:500}
@@ -60,7 +62,7 @@ main section.on{display:block}
 .rm{width:26px;height:26px;border:0;border-radius:8px;background:#FEF3F2;color:#D92D20;
  font-size:.66rem;font-weight:700;flex:0 0 auto;font-family:inherit}
 
-.inote{width:100%;border:0;border-bottom:1.5px dashed #CBD5E1;background:transparent;
+.inote{flex:1;min-width:0;border:0;border-bottom:1.5px dashed #CBD5E1;background:transparent;
  padding:8px 1px 6px;font-size:.85rem;color:#334155;font-family:inherit;margin-top:2px}
 .inote::placeholder{color:#B7BFCB}
 
@@ -178,6 +180,84 @@ table.mx{border-collapse:separate;border-spacing:0;font-size:.76rem}
  transform:translate(-50%,16px);background:#0F172A;color:#fff;font-size:.79rem;
  padding:9px 16px;border-radius:99px;opacity:0;transition:.2s;z-index:70;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- 出院时间 / 单项编辑 ---------- */
+.dcp{font-size:.6rem;font-weight:800;color:#B25E09;background:#FFF4E5;
+ padding:2px 6px;border-radius:6px;white-space:nowrap;flex:0 0 auto}
+.dcp.am{color:#24467C;background:#EAF0FB}
+.dcp.pm1{color:#0B6B45;background:#E6F6EF}
+.dcp.late{color:#B42318;background:#FEE4E2}
+.cact{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;align-items:center}
+.cact button{flex:0 0 auto;padding:6px 9px;border-radius:9px;border:1px dashed #C3CEE0;
+ background:#fff;color:#1B325B;font-size:.7rem;font-weight:700;font-family:inherit;line-height:1.2}
+.cact button.plus{font-size:.9rem;padding:4px 11px;font-weight:800}
+.cact button.solid{border-style:solid;border-color:#E2E7EF;background:#F7F9FC;color:#475467}
+.cact button.wipe{margin-left:auto;border-style:solid;border-color:#F5C2C0;
+ background:#fff;color:#B42318}
+.chip{position:relative}
+.chip .x{position:absolute;right:-4px;top:-4px;width:19px;height:19px;border-radius:50%;
+ background:#D92D20;color:#fff;font-size:.58rem;display:flex;align-items:center;
+ justify-content:center;font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.28)}
+/* 备注行：右边一个「出院」下拉 */
+.noterow{display:flex;align-items:center;gap:6px}
+.dct{flex:0 0 auto;border:1px solid #E2E7EF;background:#F7F9FC;color:#64748B;
+ padding:5px 8px;border-radius:9px;font-size:.7rem;font-weight:800;font-family:inherit;
+ white-space:nowrap;line-height:1.2}
+.dct.set{background:#FFF4E5;border-color:#F5D0A0;color:#B25E09}
+.dct.set.pm1{background:#E6F6EF;border-color:#A9DCC5;color:#0B6B45}
+.dct.set.am{background:#EAF0FB;border-color:#C3D2EA;color:#24467C}
+.dct.late{background:#FEE4E2;border-color:#F5C2C0;color:#B42318}
+.dcmenu button.on.pm1{background:#0B6B45;border-color:#0B6B45;color:#fff}
+.dcmenu{display:none;gap:5px;margin:7px 0 2px}
+.dcmenu.on{display:flex}
+.dcmenu button{flex:1;padding:8px 2px;border-radius:9px;border:1px solid #E2E7EF;background:#fff;
+ color:#475467;font-size:.71rem;font-weight:700;font-family:inherit}
+.dcmenu button.on{background:#B25E09;border-color:#B25E09;color:#fff}
+.dcmenu button.on.am{background:#24467C;border-color:#24467C}
+.dcmenu button.clr{flex:0 0 auto;padding:8px 9px;color:#B42318;border-color:#F5C2C0}
+
+/* ---------- 选床号面板 ---------- */
+#bedmask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none}
+#bedmask.on{display:block}
+#bedpick{position:fixed;left:0;right:0;bottom:0;z-index:61;background:#fff;
+ border-radius:20px 20px 0 0;padding:15px 14px calc(14px + env(safe-area-inset-bottom));
+ display:none;box-shadow:0 -10px 34px rgba(15,23,42,.22)}
+#bedpick.on{display:block}
+#bedpick h4{margin:0 0 12px;font-size:.98rem;color:#0F172A;display:flex;
+ align-items:baseline;justify-content:space-between;gap:8px}
+#bedpick h4 em{font-style:normal;font-size:.72rem;color:#64748B;font-weight:700;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
+.bpcols{display:flex;gap:12px;max-height:54vh;overflow:auto;-webkit-overflow-scrolling:touch}
+.bpcol{flex:1;min-width:0}
+.bpcol h6{margin:0 0 7px;font-size:.72rem;color:#64748B;font-weight:800;letter-spacing:.4px}
+.bpgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bpgrid button{padding:11px 0;border-radius:10px;border:1px solid #E2E7EF;background:#F7F9FC;
+ color:#1B325B;font-size:.92rem;font-weight:800;font-family:inherit;line-height:1}
+.bpcol.add .bpgrid button{background:#FFF3DC;border-color:#EFCF9B;color:#8A4B08}
+.bpgrid button.sel{background:#1B325B;border-color:#1B325B;color:#fff}
+.bpcol.add .bpgrid button.sel{background:#B45309;border-color:#B45309;color:#fff}
+.bpacts{display:flex;gap:8px;margin-top:13px}
+.bpacts button{flex:1;padding:12px 0;border-radius:11px;font-size:.88rem;font-weight:800;
+ font-family:inherit;border:1px solid #E2E7EF;background:#F7F9FC;color:#475467}
+.bpacts button.main{background:#1B325B;border-color:#1B325B;color:#fff}
+
+/* ---------- 出院页 ---------- */
+.dcsec{background:#fff;border-radius:16px;padding:12px 13px;margin-bottom:9px;
+ border:1px solid #E7EBF2;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.dcsec h5{margin:0 0 9px;font-size:.85rem;color:#1B325B;display:flex;
+ align-items:baseline;justify-content:space-between;gap:8px}
+.dcsec h5 em{font-style:normal;font-size:.74rem;color:#64748B;font-weight:700}
+.beds{display:flex;flex-wrap:wrap;gap:6px}
+.beds span{min-width:40px;text-align:center;padding:7px 9px;border-radius:9px;
+ background:#F1F5FB;color:#1B325B;font-size:.84rem;font-weight:800}
+.beds span.pm{background:#FFF4E5;color:#B25E09}
+.beds span.am{background:#EAF0FB;color:#24467C}
+.beds span.empty{background:#FEF1F0;color:#B42318}
+.beds.none{color:#98A2B3;font-size:.79rem;font-weight:600}
+.dcrow2{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.dcrow2 b{flex:0 0 6.6em;font-size:.76rem;color:#475467;font-weight:700}
+.shint{font-size:.72rem;color:#8A94A6;margin:-2px 0 9px;line-height:1.6}
+.dchint{font-size:.71rem;color:#8A94A6;line-height:1.75;padding:2px 4px 8px}
 </style>
 </head>
 <body>
@@ -200,12 +280,20 @@ table.mx{border-collapse:separate;border-spacing:0;font-size:.76rem}
     </div>
     <div id="board"></div>
     <button class="addpat" id="addPat">＋ 新增一个病人</button>
-    <div class="addhint">12 张固定床位不能删；下面加的排最后、左边带蓝线，可删</div>
+    <div class="addhint">点卡片展开 → 「✎ 编辑这一项」可以把这个病人不需要的项划掉（只影响他一个人）；「＋ 加一项」给他单独加一条。12 张固定床位不能删，下面加的排最后、左边带蓝线，可删</div>
   </section>
 
   <section id="t-mx">
     <div class="mxwrap"><table class="mx" id="mx"></table></div>
-    <div class="mxleg">横着滑看全部条目。点格子：一下 ✔ 绿＝已完成，两下 ✕ 红＝未完成，三下 — 灰＝这个病人不需要。第一列固定不动。</div>
+    <div class="mxleg">横着滑看全部条目。点格子：一下 ✔ 绿＝已完成，两下 ✕ 红＝未完成，三下 — 灰＝不适用。灰点「·」＝这个病人在卡片里把这一项划掉了。第一列固定不动。</div>
+  </section>
+
+  <section id="t-dc">
+    <div id="dcpage"></div>
+    <div class="dchint">
+      规则：12 张固定床里，「诊断 / 备注 / 打勾」全空的算空床。
+      某个时点的空床 = <b>现在空床</b> + <b>那个时点之前出院的床</b>。
+    </div>
   </section>
 
   <section id="t-tmpl">
@@ -221,6 +309,7 @@ table.mx{border-collapse:separate;border-spacing:0;font-size:.76rem}
 <nav class="tabbar">
   <a href="#board" data-tab="board" class="on">看板</a>
   <a href="#mx" data-tab="mx">总览</a>
+  <a href="#dc" data-tab="dc">出院</a>
   <a href="#tmpl" data-tab="tmpl">模板</a>
 </nav>
 
@@ -232,7 +321,7 @@ table.mx{border-collapse:separate;border-spacing:0;font-size:.76rem}
     <button class="sz" data-size="19">中</button>
     <button class="sz" data-size="21">大</button>
   </div>
-  <h4>打勾清单 · 想加第 17、18 条就在这加</h4>
+  <h4>打勾清单（所有人的默认项）</h4><div class="shint">想给某一个人单独加减，别在这改 —— 去卡片里「✎ 编辑这一项」</div>
   <div id="itemList"></div>
   <button id="addItem">＋ 添加一条</button>
   <button class="ghost" id="resetItems">恢复默认 16 条</button>
@@ -240,6 +329,19 @@ table.mx{border-collapse:separate;border-spacing:0;font-size:.76rem}
   <button class="ghost" id="btnExport">导出备份文件</button>
   <button class="ghost" id="btnImport">导入备份文件</button>
   <input type="file" id="impFile" accept=".json,application/json" hidden>
+</div>
+<div id="bedmask"></div>
+<div id="bedpick">
+  <h4>选床号 <em id="bpWho"></em></h4>
+  <div class="bpcols">
+    <div class="bpcol add"><h6>加床 ＋</h6><div class="bpgrid" id="bpAdd"></div></div>
+    <div class="bpcol"><h6>普通床</h6><div class="bpgrid" id="bpNum"></div></div>
+  </div>
+  <div class="bpacts">
+    <button id="bpCustom">自定义…</button>
+    <button id="bpClr">清空床号</button>
+    <button class="main" id="bpClose">关闭</button>
+  </div>
 </div>
 <div id="toast"></div>
 
@@ -252,9 +354,10 @@ const SEQ=['','ok','no','na'];
 const GLYPH={ok:'✔',no:'✕',na:'—'};
 
 function defItems(){ return DEF.map(function(n,i){ return {id:'s'+(i+1), n:n}; }); }
-function blank(tmp){ return {bed:'',dx:'',note:'',ck:{},tmp:!!tmp}; }
+function blank(tmp){ return {bed:'',dx:'',note:'',ck:{},dc:null,extra:[],hide:{},tmp:!!tmp}; }
 function defState(){ return {size:19, items:defItems(),
-  pts:Array.from({length:BASE},function(){ return blank(false); }), tmpl:[], kp:[], sub:'tmpl', open:{}}; }
+  pts:Array.from({length:BASE},function(_,i){ const p=blank(false); p.bed=String(i+1); return p; }),
+  tmpl:[], kp:[], sub:'tmpl', open:{}, edit:{}, dcopen:{}}; }
 
 let mem=null;
 /* 有些内置浏览器（文件预览、无痕）不让存数据，先探一下，存不了就提前提醒 */
@@ -267,9 +370,17 @@ function load(){
   try{ s=JSON.parse(localStorage.getItem(KEY)); }catch(e){ s=mem; }
   if(!s||!Array.isArray(s.items)||!s.items.length||!Array.isArray(s.pts)) s=defState();
   while(s.pts.length<BASE) s.pts.push(blank(false));
-  s.pts.forEach(function(p,i){ if(typeof p.tmp!=='boolean') p.tmp = i>=BASE; });
+  s.pts.forEach(function(p,i){
+    if(typeof p.tmp!=='boolean') p.tmp = i>=BASE;
+    if(!p.ck||typeof p.ck!=='object') p.ck={};
+    if(!Array.isArray(p.extra)) p.extra=[];
+    if(!p.hide||typeof p.hide!=='object') p.hide={};
+    if(!p.dc||typeof p.dc!=='object') p.dc=null;
+  });
   if(!s.tmpl) s.tmpl=[]; if(!s.kp) s.kp=[];
   if(!s.open||typeof s.open!=='object') s.open={};
+  if(!s.edit||typeof s.edit!=='object') s.edit={};
+  if(!s.dcopen||typeof s.dcopen!=='object') s.dcopen={};
   return s;
 }
 let state=load();
@@ -281,11 +392,50 @@ function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(save,500); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function mark(p,id){ const v=p.ck[id]; return (v==='ok'||v==='no'||v==='na')?v:''; }
+
+/* 这个病人要看哪些项：全局里没被他隐藏的 + 只属于他自己的 */
+function itemsOf(p){
+  const g=state.items.filter(function(it){ return !(p.hide&&p.hide[it.id]); });
+  return g.concat(p.extra||[]);
+}
+function totalOf(p){ return itemsOf(p).length; }
 function counts(p){
   let ok=0,no=0,na=0;
-  state.items.forEach(function(it){ const v=mark(p,it.id);
+  itemsOf(p).forEach(function(it){ const v=mark(p,it.id);
     if(v==='ok') ok++; else if(v==='no') no++; else if(v==='na') na++; });
   return {ok:ok,no:no,na:na};
+}
+/* 这张床有没有病人：诊断、备注、打勾、自加项，至少有一个 */
+function hasInfo(p){
+  const v=Object.keys(p.ck||{}).filter(function(k){ return p.ck[k]; });
+  return !!(String(p.dx||'').trim()||String(p.note||'').trim()||v.length
+    ||(p.extra&&p.extra.length));
+}
+function todayStr(k){
+  const d=new Date(); d.setDate(d.getDate()+(k||0));
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function dcText(p){
+  if(!p.dc) return '';
+  const ampm=p.dc.t==='am'?'上午':'下午';
+  if(p.dc.d===todayStr(0)) return '今'+ampm;
+  if(p.dc.d===todayStr(1)) return '明'+ampm;
+  if(p.dc.d<todayStr(0)) return '已过期';
+  return p.dc.d.slice(5)+' '+ampm;
+}
+function dcClass(p){
+  if(!p.dc) return '';
+  if(p.dc.d<todayStr(0)) return 'late';
+  if(p.dc.d===todayStr(0)) return 'pm0';
+  return p.dc.t==='am'?'am':'pm1';
+}
+function setDc(i,t,k){
+  const p=state.pts[i]; if(!p) return;
+  const d=todayStr(k);
+  if(p.dc && p.dc.d===d && p.dc.t===t) p.dc=null;   /* 再点一次＝取消 */
+  else p.dc={d:d,t:t};
+  state.dcopen={};                                  /* 选完把下拉收起来 */
+  save(); renderBoard(); renderDc();
 }
 function toggle(i,id){
   const p=state.pts[i]; if(!p) return;
@@ -299,30 +449,62 @@ function toggle(i,id){
 /* 唯一数据源：只改 state，然后 syncPatient 同时刷新看板与总览 */
 function syncPatient(i){
   const p=state.pts[i]; if(!p) return;
-  const total=state.items.length, n=counts(p), pct=total?Math.round(n.ok/total*100):0;
+  const total=totalOf(p), n=counts(p), pct=total?Math.round(n.ok/total*100):0;
   document.querySelectorAll('[data-cnt="'+i+'"]').forEach(function(el){
     el.textContent=n.ok+'/'+total; el.classList.toggle('bad', n.no>0); });
   document.querySelectorAll('[data-badge="'+i+'"]').forEach(function(el){
     if(n.no>0){ el.textContent='✕'+n.no; el.style.display=''; } else { el.style.display='none'; } });
   document.querySelectorAll('[data-bar="'+i+'"]').forEach(function(el){
     el.style.width=pct+'%'; });
-  state.items.forEach(function(it){
-    const v=mark(p,it.id);
+  itemsOf(p).forEach(function(it){
+    const v=mark(p,it.id), hid=!!(p.hide&&p.hide[it.id]);
     document.querySelectorAll('[data-seg="'+i+'_'+it.id+'"]').forEach(function(el){
       el.className=v; });
     document.querySelectorAll('[data-chip="'+i+'_'+it.id+'"]').forEach(function(el){
       el.className='chip '+v;
       const ic=el.querySelector('i'); if(ic) ic.textContent=GLYPH[v]||'';
     });
-    document.querySelectorAll('[data-cell="'+i+'_'+it.id+'"]').forEach(function(el){
+    if(!hid) document.querySelectorAll('[data-cell="'+i+'_'+it.id+'"]').forEach(function(el){
       el.className=v; el.textContent=GLYPH[v]||'·';
     });
   });
   updateStat();
 }
+
+/* 这一项不给这个病人做：全局项＝隐藏，自加项＝删掉 */
+function hideItem(i,id){
+  const p=state.pts[i]; if(!p) return;
+  const isExtra=(p.extra||[]).some(function(x){ return x.id===id; });
+  if(isExtra){ p.extra=p.extra.filter(function(x){ return x.id!==id; }); }
+  else { p.hide[id]=true; }
+  save(); renderBoard(); renderMx(); renderDc();
+  toast(isExtra?'已删掉这一项':'这个病人不做这一项');
+}
+function addPersonal(i){
+  const p=state.pts[i]; if(!p) return;
+  if(!Array.isArray(p.extra)) p.extra=[];
+  const n=prompt('只给这个病人加一项，写个名字（比如：加做下肢静脉超声）');
+  if(n===null) return;
+  const s=String(n).trim(); if(!s) return;
+  p.extra.push({id:'p'+Date.now(), n:s});
+  state.open[i]=true;
+  save(); renderBoard(); renderMx(); renderDc();
+  toast('已加：'+s);
+}
+
+/* 一键清空：这个病人出院了，床空出来（床号保留） */
+function wipePatient(i){
+  const p=state.pts[i]; if(!p) return;
+  const name=(String(p.bed||'').trim()||'这张')+' 床';
+  if(!confirm('确定清除 '+name+' 的全部信息？\n\n诊断、备注、打勾、出院时间、自加项都会清空。\n床号保留，清完这张床就显示为空床。')) return;
+  p.dx=''; p.note=''; p.ck={}; p.dc=null; p.extra=[]; p.hide={};
+  state.dcopen[i]=false;
+  save(); renderBoard(); renderMx(); renderDc();
+  toast(name+' 已清空');
+}
 function updateStat(){
   let filled=0, ok=0, no=0, extra=0;
-  state.pts.forEach(function(p){ if(p.bed||p.dx) filled++;
+  state.pts.forEach(function(p){ if(hasInfo(p)) filled++;
     if(p.tmp) extra++;
     const n=counts(p); ok+=n.ok; no+=n.no; });
   document.getElementById('stat').textContent=
@@ -330,17 +512,24 @@ function updateStat(){
 }
 
 /* 按床号排：纯数字按大小，带字母的排在数字后面，没填床号的排最后 */
+/* 排序：加床（＋5、+6）排最前，然后纯数字床（含 12A），再其它文字，空床号最后 */
 function bedKey(p){
-  const t=String(p.bed||'').trim();
-  if(!t) return {e:1, n:9e9, s:''};
-  const m=/^(\d+)/.exec(t);
-  return {e:0, n:m?+m[1]:9e8, s:t};
+  const raw=String(p.bed||'').trim();
+  if(!raw) return {g:3, n:9e9, s:''};
+  const t=raw.replace(/＋/g,'+').replace(/\s+/g,'');
+  if(t.charAt(0)==='+'){
+    const m=/\d+/.exec(t);
+    return {g:0, n:m?+m[0]:9e8, s:t};
+  }
+  const m=/^(\d+)(.*)$/.exec(t);
+  if(m) return {g:1, n:+m[1], s:t};
+  return {g:2, n:9e8, s:t};
 }
 function sortByBed(){
   const arr=state.pts.map(function(p,i){ return {p:p, i:i}; });
   arr.sort(function(a,b){
     const A=bedKey(a.p), B=bedKey(b.p);
-    if(A.e!==B.e) return A.e-B.e;
+    if(A.g!==B.g) return A.g-B.g;
     if(A.n!==B.n) return A.n-B.n;
     if(A.s!==B.s) return A.s.localeCompare(B.s,'zh-Hans-CN');
     return a.i-b.i;
@@ -351,15 +540,66 @@ function sortByBed(){
   toast('已按床号排序');
 }
 
+let bedIdx=-1;
+function renderBedGrid(){
+  const p=bedIdx>=0?state.pts[bedIdx]:null, cur=p?p.bed:'';
+  let a='';
+  for(let k=1;k<=13;k++){ const v='＋'+k;
+    a+='<button data-bv="'+v+'"'+(cur===v?' class="sel"':'')+'>'+v+'</button>'; }
+  let n='';
+  for(let k=1;k<=35;k++){ const v=String(k);
+    n+='<button data-bv="'+v+'"'+(cur===v?' class="sel"':'')+'>'+v+'</button>'; }
+  const A=document.getElementById('bpAdd'), N=document.getElementById('bpNum');
+  if(A) A.innerHTML=a;
+  if(N) N.innerHTML=n;
+}
+function openBed(i){
+  bedIdx=i;
+  const p=state.pts[i];
+  const who=document.getElementById('bpWho');
+  if(who) who.textContent=p&&p.dx?p.dx.slice(0,14):'';
+  renderBedGrid();
+  document.getElementById('bedmask').classList.add('on');
+  document.getElementById('bedpick').classList.add('on');
+}
+function closeBed(){
+  bedIdx=-1;
+  document.getElementById('bedmask').classList.remove('on');
+  document.getElementById('bedpick').classList.remove('on');
+}
+function setBed(v){
+  if(bedIdx<0) return;
+  const p=state.pts[bedIdx]; if(!p) { closeBed(); return; }
+  p.bed=v;
+  save(); renderBoard(); renderMx(); renderDc();
+  toast(v?'床位改成 '+v:'床号已清空');
+  closeBed();
+}
+
 function cardHTML(i){
-  const p=state.pts[i], n=counts(p), total=state.items.length;
+  const p=state.pts[i], n=counts(p), total=totalOf(p), ed=!!state.edit[i];
   const open=!!state.open[i], tmp=!!p.tmp;
-  const segs=state.items.map(function(it){
+  const list=itemsOf(p);
+  const segs=list.map(function(it){
     return '<i data-seg="'+i+'_'+it.id+'" class="'+mark(p,it.id)+'"></i>'; }).join('');
+  const chips=list.map(function(it){ const v=mark(p,it.id);
+    return '<button class="chip '+v+'" data-chip="'+i+'_'+it.id+'" data-i="'+i+'" data-id="'+it.id+'">'
+      +'<i>'+(GLYPH[v]||'')+'</i><em>'+esc(it.n)+'</em>'
+      +(ed?'<span class="x" data-hide="'+i+'" data-id="'+it.id+'">✕</span>':'')
+      +'</button>'; }).join('');
+  const hiddenN=Object.keys(p.hide||{}).filter(function(k){ return p.hide[k]; }).length;
+  const dt=dcText(p);
+  const dcls=dcClass(p);
+  function dcBtn(t,k,label){
+    const d=todayStr(k), on=!!(p.dc&&p.dc.d===d&&p.dc.t===t);
+    const cls=t==='am'?'am':(k===0?'pm0':'pm1');
+    return '<button class="'+(on?'on ':'')+cls+'" data-dc="'+i+'" data-dct="'+t+'" data-dck="'+k+'">'+label+'</button>';
+  }
   return '<article class="pat '+(open?'open ':'')+(tmp?'tmp':'')+'">'
     +'<div class="prow">'
-    +'<input class="ibed" data-i="'+i+'" data-f="bed" value="'+esc(p.bed)+'" placeholder="床号" inputmode="numeric">'
+    +'<button class="ibed '+( !p.bed?'none':'')+(tmp?' tmpbed':'')+'" data-bed="'+i+'">'+esc(p.bed||'选床')+'</button>'
     +'<input class="idx" data-i="'+i+'" data-f="dx" value="'+esc(p.dx)+'" placeholder="诊断">'
+    +(dt?'<span class="dcp '+dcls+'">'+dt+'</span>':'')
     +'<span class="meta">'
     +'<span class="badge" data-badge="'+i+'" style="'+(n.no>0?'':'display:none')+'">✕'+n.no+'</span>'
     +'<span class="cnt" data-cnt="'+i+'">'+n.ok+'/'+total+'</span>'
@@ -367,13 +607,24 @@ function cardHTML(i){
     +(tmp?'<button class="rm" data-rm="'+i+'">✕</button>':'')
     +'<button class="chev '+(open?'open':'')+'" data-open="'+i+'">'+(open?'▴':'▾')+'</button>'
     +'</div>'
+    +'<div class="noterow">'
     +'<input class="inote" data-i="'+i+'" data-f="note" value="'+esc(p.note)+'" placeholder="备注">'
+    +'<button class="dct '+(dt?(dcls?dcls+' set':'set'):'')+'" data-dctog="'+i+'">'
+      +(dt||'出院')+' ▾</button>'
+    +'</div>'
+    +'<div class="dcmenu '+(state.dcopen&&state.dcopen[i]?'on':'')+'">'
+      +dcBtn('pm',0,'今日下午')+dcBtn('am',1,'明日上午')+dcBtn('pm',1,'明日下午')
+      +(p.dc?'<button class="clr" data-dcclr="'+i+'">清除</button>':'')
+    +'</div>'
     +'<div class="seg">'+segs+'</div>'
-    +'<div class="pbody '+(open?'on':'')+'"><div class="chips">'
-    + state.items.map(function(it){ const v=mark(p,it.id);
-        return '<button class="chip '+v+'" data-chip="'+i+'_'+it.id+'" data-i="'+i+'" data-id="'+it.id+'">'
-          +'<i>'+(GLYPH[v]||'')+'</i><em>'+esc(it.n)+'</em></button>'; }).join('')
-    +'</div></div>'
+    +'<div class="pbody '+(open?'on':'')+'"><div class="chips">'+chips+'</div>'
+    +'<div class="cact">'
+    +'<button class="plus" data-add2="'+i+'" title="只给这个病人加一项">＋</button>'
+    +'<button class="solid" data-edit="'+i+'">'+(ed?'完成':'编辑')+'</button>'
+    +(hiddenN?'<button class="solid" data-unhide="'+i+'">↺ '+hiddenN+'</button>':'')
+    +'<button class="wipe" data-wipe="'+i+'">清除</button>'
+    +'</div>'
+    +'</div>'
     +'</article>';
 }
 function renderBoard(){
@@ -392,13 +643,60 @@ function renderMx(){
     const n=counts(p);
     h+='<tr><th class="stk">'+esc(p.bed||'—')+'</th>';
     state.items.forEach(function(it){
-      const v=mark(p,it.id);
-      h+='<td class="'+v+'" data-cell="'+i+'_'+it.id+'" data-i="'+i+'" data-id="'+it.id+'">'
-        +(GLYPH[v]||'·')+'</td>';
+      const hid=!!(p.hide&&p.hide[it.id]);
+      const v=hid?'':mark(p,it.id);
+      h+='<td class="'+(hid?'na':v)+'" data-cell="'+i+'_'+it.id+'" data-i="'+i+'" data-id="'+it.id+'">'
+        +(hid?'·':(GLYPH[v]||'·'))+'</td>';
     });
-    h+='<td class="sum" data-cnt="'+i+'">'+n.ok+'/'+state.items.length+'</td></tr>';
+    h+='<td class="sum" data-cnt="'+i+'">'+n.ok+'/'+totalOf(p)+'</td></tr>';
   });
   t.innerHTML=h+'</tbody>';
+}
+
+/* ---------- 出院页 ---------- */
+function bedSortStr(a,b){ const A=bedKey({bed:a}), B=bedKey({bed:b});
+  if(A.g!==B.g) return A.g-B.g;
+  if(A.n!==B.n) return A.n-B.n;
+  return A.s.localeCompare(B.s,'zh-Hans-CN');
+}
+function renderDc(){
+  const box=document.getElementById('dcpage'); if(!box) return;
+  const fixed=state.pts.filter(function(p){ return !p.tmp; });   /* 只有这 12 张算空床 */
+  const now=todayStr(0), tm=todayStr(1);
+  const inNow=state.pts.filter(hasInfo);                        /* 在院：含临时床 */
+  const pm1=[], am2=[], pm2=[];
+  inNow.forEach(function(p){
+    if(!p.dc) return;
+    if(p.dc.d===now && p.dc.t==='pm') pm1.push(p);
+    else if(p.dc.d===tm && p.dc.t==='am') am2.push(p);
+    else if(p.dc.d===tm && p.dc.t==='pm') pm2.push(p);
+  });
+  const emptyNow=fixed.filter(function(p){ return !hasInfo(p); });
+  function uniq(arr){ const out=[];
+    arr.forEach(function(p){ if(out.indexOf(p)<0) out.push(p); }); return out; }
+  function bedsHTML(arr,cls){
+    if(!arr.length) return '<div class="beds none">无</div>';
+    return '<div class="beds">'+arr.slice().sort(function(a,b){
+      return bedSortStr(a.bed||'',b.bed||''); }).map(function(p){
+      return '<span class="'+(cls||'')+'">'+esc(p.bed||'—')+'</span>'; }).join('')+'</div>';
+  }
+  function sec(title,n,arr,cls){
+    return '<div class="dcsec"><h5>'+title+' <em>'+n+'</em></h5>'+bedsHTML(arr,cls)+'</div>';
+  }
+  const e1=uniq(emptyNow.concat(pm1));
+  const e2=uniq(emptyNow.concat(pm1,am2));
+  const e3=uniq(emptyNow.concat(pm1,am2,pm2));
+  box.innerHTML=
+     sec('在院床位', inNow.length+' 人', inNow, '')
+    +sec('今日下午出院', pm1.length+' 张', pm1, 'pm')
+    +sec('明日上午出院', am2.length+' 张', am2, 'am')
+    +sec('明日下午出院', pm2.length+' 张', pm2, 'pm')
+    +'<div class="dcsec"><h5>空床汇总 <em>按 12 张固定床算</em></h5>'
+    +'<div class="dcrow2"><b>现在</b>'+bedsHTML(emptyNow,'empty')+'</div>'
+    +'<div class="dcrow2"><b>今日下午</b>'+bedsHTML(e1,'empty')+'</div>'
+    +'<div class="dcrow2"><b>明日上午</b>'+bedsHTML(e2,'empty')+'</div>'
+    +'<div class="dcrow2"><b>明日下午</b>'+bedsHTML(e3,'empty')+'</div>'
+    +'</div>';
 }
 
 function renderBlocks(){
@@ -437,6 +735,32 @@ function closeSet(){ document.getElementById('set').classList.remove('on');
   document.getElementById('mask').classList.remove('on'); }
 
 document.addEventListener('click',function(ev){
+  const bvw=ev.target.closest('[data-bv]');
+  if(bvw){ setBed(bvw.dataset.bv); ev.preventDefault(); return; }
+  const bd=ev.target.closest('[data-bed]');
+  if(bd){ openBed(+bd.dataset.bed); return; }
+  /* 编辑模式里的 ✕：这一项不给这个病人做（或删掉自加项） */
+  const hx=ev.target.closest('[data-hide]');
+  if(hx){ hideItem(+hx.dataset.hide, hx.dataset.id); return; }
+  const uw=ev.target.closest('[data-unhide]');
+  if(uw){ const p=state.pts[+uw.dataset.unhide]; if(p){ p.hide={};
+    save(); renderBoard(); renderMx(); renderDc(); toast('已还原'); } return; }
+  const ad2=ev.target.closest('[data-add2]');
+  if(ad2){ addPersonal(+ad2.dataset.add2); return; }
+  const eb=ev.target.closest('[data-edit]');
+  if(eb){ const i=+eb.dataset.edit; state.edit[i]=!state.edit[i];
+    save(); renderBoard(); return; }
+  const dct=ev.target.closest('[data-dctog]');
+  if(dct){ const i=+dct.dataset.dctog; state.dcopen[i]=!state.dcopen[i];
+    save(); renderBoard(); return; }
+  const wipe=ev.target.closest('[data-wipe]');
+  if(wipe){ wipePatient(+wipe.dataset.wipe); return; }
+  const dcb=ev.target.closest('[data-dc]');
+  if(dcb){ setDc(+dcb.dataset.dc, dcb.dataset.dct, +dcb.dataset.dck); return; }
+  const dcl=ev.target.closest('[data-dcclr]');
+  if(dcl){ const p=state.pts[+dcl.dataset.dcclr]; if(p){ p.dc=null;
+    save(); renderBoard(); renderDc(); } return; }
+
   const chip=ev.target.closest('.chip');
   if(chip){ toggle(+chip.dataset.i, chip.dataset.id); return; }
   const cell=ev.target.closest('#mx td');
@@ -453,7 +777,7 @@ document.addEventListener('click',function(ev){
     if(!state.pts[i]||!state.pts[i].tmp){ toast('这 12 张是固定床位'); return; }
     if(!confirm('删掉这张卡？（这个病人的打勾一并删除）')) return;
     state.pts.splice(i,1); state.open={};
-    save(); renderBoard(); renderMx(); toast('已删除'); return; }
+    save(); renderBoard(); renderMx(); renderDc(); toast('已删除'); return; }
   const del=ev.target.closest('.bdel');
   if(del){ state[del.dataset.k].splice(+del.dataset.i,1); save(); renderBlocks(); return; }
   const up=ev.target.closest('.up'), dn=ev.target.closest('.dn'), rm=ev.target.closest('.irow .del');
@@ -492,10 +816,29 @@ document.addEventListener('input',function(ev){
 });
 document.addEventListener('change',function(ev){
   const t=ev.target;
-  if(t.classList.contains('iname')){ save(); renderBoard(); renderMx(); }
+  if(t.classList.contains('iname')){ save(); renderBoard(); renderMx(); return; }
+  /* 改完床号/诊断/备注、光标离开时，顺手把「出院」页刷新一遍 */
+  if(t.classList.contains('ibed')||t.classList.contains('idx')||t.classList.contains('inote')){
+    /* 床号：加5 / +5 都自动写成 ＋5 */
+    if(t.classList.contains('ibed')){
+      const m=/^\s*(?:加|＋|\+)\s*(\d+)\s*$/.exec(t.value||'');
+      if(m){ t.value='＋'+m[1]; state.pts[+t.dataset.i].bed=t.value; }
+    }
+    save(); renderDc();
+  }
 });
 document.getElementById('btnSet').onclick=openSet;
 document.getElementById('mask').onclick=closeSet;
+document.getElementById('bedmask').onclick=closeBed;
+document.getElementById('bpClose').onclick=closeBed;
+document.getElementById('bpClr').onclick=function(){ setBed(''); };
+document.getElementById('bpCustom').onclick=function(){
+  const cur=bedIdx>=0&&state.pts[bedIdx]?state.pts[bedIdx].bed:'';
+  const v=prompt('自定义床号（例：12A、＋14、监护1）', cur);
+  if(v===null) return;
+  const t=v.trim().replace(/^\+\s*/, '＋').replace(/^加\s*/, '＋');
+  setBed(t);
+};
 document.getElementById('sortBed').onclick=sortByBed;
 document.getElementById('foldAll').onclick=function(){
   state.open={}; save(); renderBoard(); toast('已全部收起'); };
@@ -503,10 +846,9 @@ document.getElementById('addPat').onclick=function(){
   state.pts.push(blank(true));
   const i=state.pts.length-1;
   state.open={}; state.open[i]=true;
-  save(); renderBoard(); renderMx();
-  const el=document.querySelectorAll('.ibed')[i];
-  if(el) el.focus();
-  toast('已加一张（临时床）');
+  save(); renderBoard(); renderMx(); renderDc();
+  openBed(i);
+  toast('已加一张临时床，先选床号');
 };
 document.getElementById('addItem').onclick=function(){
   state.items.push({id:'x'+Date.now(), n:'新条目'});
@@ -531,7 +873,7 @@ document.getElementById('addBlk').onclick=function(){
 };
 
 /* ---------- 备份：导出 / 导入 ---------- */
-function renderAll(){ renderBoard(); renderMx(); renderBlocks(); }
+function renderAll(){ renderBoard(); renderMx(); renderDc(); renderBlocks(); }
 function exportData(){
   let txt='';
   try{ txt=JSON.stringify(state); }catch(e){ toast('导出失败'); return; }
@@ -550,7 +892,10 @@ function importData(txt){
   try{ d=JSON.parse(txt); }catch(e){ toast('文件读不出来'); return; }
   if(!d||!Array.isArray(d.items)||!d.items.length||!Array.isArray(d.pts)){ toast('不是备份文件'); return; }
   while(d.pts.length<BASE) d.pts.push(blank(false));
-  d.pts.forEach(function(p,i){ if(typeof p.tmp!=='boolean') p.tmp=i>=BASE; if(!p.ck) p.ck={}; });
+  d.pts.forEach(function(p,i){ if(typeof p.tmp!=='boolean') p.tmp=i>=BASE;
+    if(!p.ck) p.ck={}; if(!Array.isArray(p.extra)) p.extra=[];
+    if(!p.hide||typeof p.hide!=='object') p.hide={};
+    if(!p.dc||typeof p.dc!=='object') p.dc=null; });
   d.tmpl=d.tmpl||[]; d.kp=d.kp||[]; d.open={}; d.sub=d.sub||'tmpl'; d.size=d.size||19;
   state=d; markStorage(); save();
   document.documentElement.style.fontSize=(state.size||19)+'px';
@@ -591,6 +936,7 @@ document.querySelectorAll('.tabbar a').forEach(function(a){
     document.querySelectorAll('.tabbar a').forEach(function(x){
       x.classList.toggle('on',x.dataset.tab===n); });
     window.scrollTo(0,0);
+    if(n==='dc') renderDc();
     try{ location.hash=n; }catch(e){}
   };
 });
@@ -612,9 +958,9 @@ document.documentElement.style.fontSize=(state.size||19)+'px';
 document.querySelectorAll('.sz').forEach(function(x){
   x.classList.toggle('on',+x.dataset.size===(state.size||19)); });
 markStorage();
-renderBoard(); renderMx(); renderBlocks();
+renderBoard(); renderMx(); renderDc(); renderBlocks();
 const h0=(location.hash||'').replace('#','');
-if(['board','mx','tmpl'].indexOf(h0)>=0){
+if(['board','mx','dc','tmpl'].indexOf(h0)>=0){
   document.querySelectorAll('main section').forEach(function(s){
     s.classList.toggle('on',s.id==='t-'+h0); });
   document.querySelectorAll('.tabbar a').forEach(function(x){
